@@ -609,7 +609,11 @@ jobs:
       - name: 下载报告
         uses: actions/download-artifact@v4
         with:
+          name: analysis-reports-${{ github.run_number }}
           path: reports
+
+      - name: 查看文件
+        run: find reports -type f
 
       - name: 发送邮件
         uses: dawidd6/action-send-mail@v3
@@ -621,6 +625,5 @@ jobs:
           subject: "📊 每日股票分析 #${{ github.run_number }}"
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_USERNAME }}
-          content_type: text/plain
-          body: "报告已生成，请查看附件。\n运行编号：${{ github.run_number }}\n状态：${{ job.status }}"
-          attachments: reports/*.md
+          body: "报告已生成，请查看附件。\n运行编号: ${{ github.run_number }}\n状态: ${{ job.status }}"
+          attachments: reports/**/*

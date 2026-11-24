@@ -601,6 +601,7 @@ jobs:
             echo "📜 最近日志（最后 30 行）:"
             tail -30 logs/stock_analysis_*.log 2>/dev/null || echo "无日志"
           fi
+
   send-mail:
     needs: analyze
     if: always()
@@ -612,18 +613,25 @@ jobs:
           name: analysis-reports-${{ github.run_number }}
           path: reports
 
-      - name: 查看文件
+      - name: 查看文件结构
         run: find reports -type f
+
+      - name: 拍平目录
+        run: |
+          mkdir -p final
+          find reports -type f -exec cp {} final/ \;
+          ls -la final/
 
       - name: 发送邮件
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.qq.com
           server_port: 465
+          secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "📊 每日股票分析 #${{ github.run_number }}"
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_USERNAME }}
           body: "报告已生成，请查看附件。\n运行编号: ${{ github.run_number }}\n状态: ${{ job.status }}"
-          attachments: reports/**/*
+          attachments: final/*  
